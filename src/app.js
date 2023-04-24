@@ -244,6 +244,50 @@ function show_data() {
 		L.marker([40.194, -74.894], { icon: icon }).addTo(map);
 	}
 
+	/* for (var i in data) {
+		var d = data[i];
+		//we set all of the style properties based on the myData object above.
+		circles.push(
+			L.circleMarker(myData.latLng(d), {
+				radius: v("radius", d),
+				weight: v("strokeWeight", d),
+				color: v("strokeColor", d),
+				fillColor: v("fillColor", d),
+				opacity: v("strokeOpacity", d),
+				fillOpacity: v("fillOpacity", d),
+				className: v("class", d) + " " + (v("show", d, true) == true ? "" : "hidden"),
+				i: i, //the circles' index 
+				d: d //the data linked to the circle
+			})
+				.addTo(map)
+				.on("click", function () { //when the user clicks on a circle
+					var element = this._path;
+					for (var i in circles) {
+						if (circles[i].options.d.i == this.options.d.i) {
+							circles[i]._path.classList.add("selected");
+						} else {
+							circles[i]._path.classList.remove("selected");
+						}
+					}
+					if (typeof myData.caption == "function") {
+						myData.caption.call(this, this.options.d, element);
+					}
+				})
+				.on("mouseover", function () { //when the user hovers over a circle
+					var element = this._path;
+					if (typeof myData.mouseover == "function") {
+						myData.mouseover.call(this, this.options.d, element);
+					}
+				})
+				.on("mouseout", function () { //when the user stops hovering
+					var element = this._path;
+					if (typeof myData.mouseout == "function") {
+						myData.mouseout.call(this, this.options.d, element);
+					}
+				})
+		)
+	} */
+
 }
 
 //function that updates the data
