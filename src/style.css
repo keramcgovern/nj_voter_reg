@@ -1,0 +1,84 @@
+html,
+body {
+	background-color: rgb(230, 231, 234);
+	padding: 0;
+	margin: 0;
+	font-family: Arial;
+}
+
+#map {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	right: 500px;
+	bottom: 0px;
+	z-index: 0;
+}
+
+#menu {
+	position: absolute;
+	width: 500px;
+	background-color: rgb(230, 231, 234);
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	z-index: 10;
+}
+
+#menu_contents {
+	padding: 2em;
+}
+
+h2 {
+	padding: 0;
+	margin: 0;
+}
+
+.header {
+	font-size: 32pt;
+	font-weight: 100;
+	letter-spacing: 2pt;
+}
+
+#options {
+	padding-bottom: 1em;
+	padding-top: 1em;
+}
+
+#options div {
+	padding-bottom: 1em;
+}
+
+#status {
+	font-size: 10pt;
+	color: dimgray;
+	position: fixed;
+	bottom: 1em;
+	left: 1em;
+}
+
+#locator {
+	max-width: 230px;
+}
+
+/* css targeting SVG elements -- these are different than normal CSS properties! */
+path.leaflet-interactive {
+	filter: drop-shadow(0px 0px 3px rgba(255, 255, 255, 0.8)) drop-shadow(0px 0px 0px rgba(0, 0, 0, 0.2));
+	/* this helps it stand out from the background a bit */
+}
+
+.hover {
+	stroke-opacity: 1 !important;
+	fill-opacity: 0.8 !important;
+}
+
+.selected {
+	fill-opacity: 1;
+	stroke-opacity: 1;
+	stroke: rgb(255, 255, 255);
+	stroke-width: 5;
+}
+
+.hidden {
+	display: none !important;
+}
