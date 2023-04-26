@@ -7,24 +7,11 @@ const parse = require('csv-parse');
 // Initialize leaflet.js
 var L = require('leaflet');
 
-const districtCoords = {
-	1:[39.777820246766645, -75.04968499362114],
-	2:[39.45262837055235, -74.89715640108363],
-	3:[39.870735214023505, -74.52817140049724],
-	4:[40.16786384054729, -74.26589156502571],
-	5:[40.913513358835594, -74.51684450176056],
-	6:[40.48871045319269, -74.15459604868919],
-	7:[40.65679652356134, -74.7435698222786],
-	8:[40.72299688047879, -74.11661288585557],
-	9:[40.85777195407002, -74.04916744107621],
-	10:[40.729406508147186, -74.18617842653319],
-	11:[40.89042268203383, -74.42626085332499],
-	12:[40.382999273519935, -74.5388554503266]
-}
+const districtsData = require('./districts114.json');
 
 // Initialize the map
 var map = L.map('map', {
-	scrollWheelZoom: false
+	scrollWheelZoom: true
 });
 
 // Initialize globals
@@ -227,6 +214,17 @@ var myData = {
 
 }
 
+function style(feature) {
+	console.log(feature);
+	return {
+		weight: 2,
+		opacity: 1,
+		color: 'blue',
+		dashArray: '3',
+		fillOpacity: 0.7
+	};
+}
+
 
 //function that displays the data
 function show_data() {
@@ -248,89 +246,16 @@ function show_data() {
 		if (v("radius", a) < v("radius", b)) return 1;
 		return 0;
 	})
-	for (let i = 1; i < 13; i++) {
-		var d = data[i];
-		var icon = L.icon({
-			iconUrl: `/lib/images/district_${i}.png`,
-			iconSize: [330, 570], // size of the icon
-			iconAnchor: [142, 275], // point of the icon which will correspond to marker's location
-		});
-		circles.push(L.marker(districtCoords[i], { icon: icon, i:i,
-			className: v("class", d) + " " + (v("show", d, true) == true ? "" : "hidden")})
-		.addTo(map)
-		.on("click", function () { //when the user clicks on a circle
-			var element = this._path;
-			for (var i in circles) {
-				if (circles[i].options.d.i == this.options.d.i) {
-					circles[i]._path.classList.add("selected");
-				} else {
-					circles[i]._path.classList.remove("selected");
-				}
-			}
-			if (typeof myData.caption == "function") {
-				myData.caption.call(this, this.options.d, element);
-			}
-		})
-		.on("mouseover", function () { //when the user hovers over a circle
-			var element = this._path;
-			if (typeof myData.mouseover == "function") {
-				myData.mouseover.call(this, this.options.d, element);
-			}
-		})
-		.on("mouseout", function () { //when the user stops hovering
-			var element = this._path;
-			if (typeof myData.mouseout == "function") {
-				myData.mouseout.call(this, this.options.d, element);
-			}
-		})
-		);
-	}
 
-	/* for (var i in data) {
-		var d = data[i];
-		//we set all of the style properties based on the myData object above.
-		circles.push(
-			L.circleMarker(myData.latLng(d), {
-				radius: v("radius", d),
-				weight: v("strokeWeight", d),
-				color: v("strokeColor", d),
-				fillColor: v("fillColor", d),
-				opacity: v("strokeOpacity", d),
-				fillOpacity: v("fillOpacity", d),
-				className: v("class", d) + " " + (v("show", d, true) == true ? "" : "hidden"),
-				i: i, //the circles' index 
-				d: d //the data linked to the circle
-			})
-				.addTo(map)
-				.on("click", function () { //when the user clicks on a circle
-					var element = this._path;
-					for (var i in circles) {
-						if (circles[i].options.d.i == this.options.d.i) {
-							circles[i]._path.classList.add("selected");
-						} else {
-							circles[i]._path.classList.remove("selected");
-						}
-					}
-					if (typeof myData.caption == "function") {
-						myData.caption.call(this, this.options.d, element);
-					}
-				})
-				.on("mouseover", function () { //when the user hovers over a circle
-					var element = this._path;
-					if (typeof myData.mouseover == "function") {
-						myData.mouseover.call(this, this.options.d, element);
-					}
-				})
-				.on("mouseout", function () { //when the user stops hovering
-					var element = this._path;
-					if (typeof myData.mouseout == "function") {
-						myData.mouseout.call(this, this.options.d, element);
-					}
-				})
-		)
-	} */
+	var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
 
+	L.geoJson(districtsData, { style: style }).addTo(map);
 }
+
+
 
 //function that updates the data
 //if hard_update is false, will totally re-do the circles. use this for
