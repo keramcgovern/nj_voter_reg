@@ -21,28 +21,6 @@ var circles = []; //an array for our circles
 // 40.7,-73.9 = NYC (lat, lon), 11 = a zoom level to see Manhattan
 map.setView([40.194, -74.894], 8);
 
-// Initialize the base layer of OpenStreetMaps
-/*var osm_mapnik = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	maxZoom: 19,
-	attribution: '&copy; OSM Mapnik <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);*/
-
-var layers = {
-	street: "m",
-	satellite: "s",
-	hybrid: "s,h",
-	terrain: "p",
-	lightroads: "r",
-	justroads: "h"
-}
-
-// I have no idea what the usage policy is for these kinds of tiles from Google. Seems to work..?
-var gmap_tiles = L.tileLayer('http://{s}.google.com/vt/lyrs=' + layers.lightroads + '&x={x}&y={y}&z={z}', {
-	maxZoom: 20,
-	opacity: 0.5,
-	subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-}).addTo(map);
-
 // Set up an event handler to fire while the map is dragging
 map.on("drag", function () {
 	update_status();
@@ -59,7 +37,7 @@ function update_status() {
 //an object that contains info about the specific data I am displaying
 var myData = {
 	//the CSV file with the data 
-	csv: "NYC_Pool_Inspections.csv",
+	csv: "VoterRegistration.csv",
 
 	//function that returns the latitude and longtiude of the data as an array
 	latLng: function (d) { return [+d.lat, +d.long] },
@@ -252,7 +230,7 @@ function show_data() {
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
 
-	L.geoJson(districtsData, { style: style }).addTo(map);
+	L.geoJson(districtsData).addTo(map);
 }
 
 
@@ -281,6 +259,14 @@ function update(hard_update = false) {
 			}
 		}
 		myData.locator();
+		if ($('#compare').prop('checked')) {
+			$('#one_month').hide();
+			$('#compare_months').show();
+		}
+		else if ($('#single_month').prop('checked')) {
+			$('#one_month').show();
+			$('#compare_months').hide();
+		}
 	} else {
 		show_data();
 	}
@@ -304,7 +290,7 @@ function v(property, data) {
 update_status(); //update the status bar
 
 //set up the events for the UI elements
-$("#filter_pool_type").on("change", function () {
+$("#filter_selection").on("change", function () {
 	update();
 })
 $("#filter_violations").on("change", function () {

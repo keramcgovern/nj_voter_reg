@@ -15,48 +15,112 @@
 	<div id="map"></div>
 	<div id="menu">
 		<div id="menu_contents">
-			<h2 class="header">NYC Pool Inspection Violations</h2>
+			<h2 class="header">NJ Voter Registration</h2>
 			<div id="options">
 				<div>
-					Borough:
-					<select id="filter_bo">
-						<option value="" selected>All</option>
-						<option value="bx">Bronx</option>
-						<option value="bk">Brooklyn</option>
-						<option value="ma">Manhattan</option>
-						<option value="qu">Queens</option>
-						<option value="si">Staten Island</option>
-					</select>
-				</div>
-				<div>
-					Pool Type:
-					<select id="filter_pool_type">
-						<option value="" selected>All</option>
-						<option value="indoor">Indoor Pool</option>
-						<option value="outdoor">Outdoor Pool</option>
-					</select>
-				</div>
-				<div>
-					Locate data:
-					<select id="locator">
-						<option value=""></option>
-					</select>
-				</div>
-				<div>
-					<fieldset id="filter_violations">
-						Filter by year of inspection: <br>
-						<input type="checkbox" id="2019" value="2019" checked>2019<br>
-						<input type="checkbox" id="2020" value="2020" checked>2020<br>
-						<input type="checkbox" id="2021" value="2021" checked>2021<br>
+					<fieldset id="filter_selection">
+						<input type="radio" id="single_month" value="single_month" name="selection" checked>Observe One
+						Month<br>
+						<input type="radio" id="compare" value="compare" name="selection">Compare Two Months<br>
 					</fieldset>
 				</div>
+				<div id="one_month">
+					<table>
+						<tr>
+							<td>
+								<select id="filter_single_month">
+									<option value="january" selected>January</option>
+									<option value="february">February</option>
+									<option value="march">March</option>
+									<option value="april">April</option>
+									<option value="may">May</option>
+									<option value="june">June</option>
+									<option value="july">July</option>
+									<option value="august">August</option>
+									<option value="september">September</option>
+									<option value="october">October</option>
+									<option value="november">November</option>
+									<option value="december">December</option>
+								</select>
+								<select id="filter_single_year">
+									<option value="2018" selected>2018</option>
+									<option value="2019">2019</option>
+									<option value="2020">2020</option>
+									<option value="2021">2021</option>
+								</select>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div hidden id="compare_months">
+					<table>
+						<tr>
+							<td>
+								First Month:
+								<select id="filter_compare_month_one">
+									<option value="january" selected>January</option>
+									<option value="february">February</option>
+									<option value="march">March</option>
+									<option value="april">April</option>
+									<option value="may">May</option>
+									<option value="june">June</option>
+									<option value="july">July</option>
+									<option value="august">August</option>
+									<option value="september">September</option>
+									<option value="october">October</option>
+									<option value="november">November</option>
+									<option value="december">December</option>
+								</select>
+								<select id="filter_compare_year_one">
+									<option value="2018" selected>2018</option>
+									<option value="2019">2019</option>
+									<option value="2020">2020</option>
+									<option value="2021">2021</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								Second Month:
+								<select id="filter_compare_month_two">
+									<option value="january" selected>January</option>
+									<option value="february">February</option>
+									<option value="march">March</option>
+									<option value="april">April</option>
+									<option value="may">May</option>
+									<option value="june">June</option>
+									<option value="july">July</option>
+									<option value="august">August</option>
+									<option value="september">September</option>
+									<option value="october">October</option>
+									<option value="november">November</option>
+									<option value="december">December</option>
+								</select>
+								<select id="filter_compare_year_two">
+									<option value="2018" selected>2018</option>
+									<option value="2019">2019</option>
+									<option value="2020">2020</option>
+									<option value="2021">2021</option>
+								</select>
+							</td>
+						</tr>
+					</table>
+				</div>
 				<div>
-					<fieldset id="filter_violations">
-						Filter by type of violation: <br>
-						<input type="checkbox" id="phh" value="phh" checked>Public Health Hazard Violation<br>
-						<input type="checkbox" id="critical" value="critical" checked>Critical Violation<br>
-						<input type="checkbox" id="general" value="general" checked>General Violation<br>
-					</fieldset>
+					Party:
+					<select id="party">
+						<option value="" selected>All</option>
+						<option value="una">UNA</option>
+						<option value="dem">DEM</option>
+						<option value="rep">REP</option>
+						<option value="cnv">CNV</option>
+						<option value="con">CON</option>
+						<option value="gre">GRE</option>
+						<option value="lib">LIB</option>
+						<option value="nat">NAT</option>
+						<option value="rfp">RFP</option>
+						<option value="ssp">SSP</option>
+					</select>
 				</div>
 			</div>
 			<div id="caption"></div>
