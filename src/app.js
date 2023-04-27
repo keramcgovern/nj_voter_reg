@@ -16,6 +16,7 @@ var map = L.map('map', {
 
 // Initialize globals
 var circles = []; //an array for our circles
+var geojson;
 
 // Set the starting position and zoom level of the map
 // 40.7,-73.9 = NYC (lat, lon), 11 = a zoom level to see Manhattan
@@ -203,6 +204,66 @@ function style(feature) {
 	};
 }
 
+function findMonthData(district){
+	var month = $("#filter_single_month").val();
+	var year = $("#filter_single_year").val();
+
+	var temp = myData.data;
+	for (i in temp){
+		if (temp[i].month == month && +temp[i].year == year && +temp[i].congressional_voting_district == district){
+			return temp[i];
+		}
+	}
+	return null;
+}
+
+function displayInfo(e){
+	var district = e.target.feature.properties.DISTRICT
+	let monthData = findMonthData(district);
+	console.log(monthData);
+	var o = "";
+	o += "<b>District " + district + "</b><br>";
+	o += "Dems: " + monthData.dem + "<br>";
+	o += "Reps: " + monthData.rep + "<br>";
+	//o += "Dems: " + monthData.dem + "<br>";
+	$("#caption").html(o);
+	zoomToFeature(e);
+}
+
+
+function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: '#666',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+
+    layer.bringToFront();
+}
+
+function resetHighlight(e) {
+    geojson.resetStyle(e.target);
+}
+
+function zoomToFeature(e) {
+    map.fitBounds(e.target.getBounds());
+}
+
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: displayInfo
+    });
+}
+
+geojson = L.geoJson(districtsData, {
+    style: style,
+    onEachFeature: onEachFeature
+}).addTo(map);
 
 //function that displays the data
 function show_data() {
@@ -230,7 +291,7 @@ function show_data() {
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
 
-	L.geoJson(districtsData).addTo(map);
+	geojson = L.geoJson(districtsData, {onEachFeature: onEachFeature}).addTo(map);
 }
 
 
