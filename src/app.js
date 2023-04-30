@@ -1,3 +1,6 @@
+var Rainbow = require('rainbowvis.js');
+var myRainbow = new Rainbow();
+
 // Initialize Jquery on our window
 var $ = jQuery = require('jquery');
 
@@ -192,13 +195,20 @@ var myData = {
 	},
 
 }
+function getColor(district){
+	let MData = findMonthData(district);
+	myRainbow.setSpectrum('blue','purple','red');
+	let numRep = MData.rep.replace(',','');
+	let numDem = MData.dem.replace(',','');
+	myRainbow.setNumberRange(0,parseInt(numDem)+parseInt(numRep));
+	return '#'+myRainbow.colorAt(parseInt(numRep));
+}
 
 function style(feature) {
-	console.log(feature);
 	return {
 		weight: 2,
 		opacity: 1,
-		color: 'blue',
+		color: getColor(feature.properties.DISTRICT),
 		dashArray: '3',
 		fillOpacity: 0.7
 	};
@@ -207,10 +217,10 @@ function style(feature) {
 function findMonthData(district){
 	var month = $("#filter_single_month").val();
 	var year = $("#filter_single_year").val();
-
 	var temp = myData.data;
 	for (i in temp){
-		if (temp[i].month == month && +temp[i].year == year && +temp[i].congressional_voting_district == district){
+		//console.log(`TMonth = ${temp[i].month}, month = ${month}, TDist = ${temp[i].congressional_voting_district}, dist = ${district}`);
+		if (temp[i].month == month && temp[i].year == year && temp[i].congressional_voting_district == district){
 			return temp[i];
 		}
 	}
@@ -220,12 +230,10 @@ function findMonthData(district){
 function displayInfo(e){
 	var district = e.target.feature.properties.DISTRICT
 	let monthData = findMonthData(district);
-	console.log(monthData);
 	var o = "";
 	o += "<b>District " + district + "</b><br>";
 	o += "Dems: " + monthData.dem + "<br>";
 	o += "Reps: " + monthData.rep + "<br>";
-	//o += "Dems: " + monthData.dem + "<br>";
 	$("#caption").html(o);
 	zoomToFeature(e);
 }
@@ -260,10 +268,7 @@ function onEachFeature(feature, layer) {
     });
 }
 
-geojson = L.geoJson(districtsData, {
-    style: style,
-    onEachFeature: onEachFeature
-}).addTo(map);
+
 
 //function that displays the data
 function show_data() {
@@ -286,12 +291,6 @@ function show_data() {
 		return 0;
 	})
 
-	var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		maxZoom: 19,
-		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-	}).addTo(map);
-
-	geojson = L.geoJson(districtsData, {onEachFeature: onEachFeature}).addTo(map);
 }
 
 
@@ -328,6 +327,7 @@ function update(hard_update = false) {
 			$('#one_month').show();
 			$('#compare_months').hide();
 		}
+		
 	} else {
 		show_data();
 	}
@@ -403,6 +403,16 @@ $.get(myData.csv, function (csvString) {
 
 			}
 			show_data();
+
+			var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				maxZoom: 19,
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+			}).addTo(map);
+			
+			geojson = L.geoJson(districtsData, {
+				style: style,
+				onEachFeature: onEachFeature
+			}).addTo(map);
 		}
 	})
 })
