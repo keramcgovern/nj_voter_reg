@@ -242,9 +242,17 @@ function displayInfo(e){
 		
 	}
 	else {
-		o += "<b>District " + district + "</b><br>";
+		o += "<b>District " + district + "</b><br><br>";
 		o += "Dems: " + monthData.dem + "<br>";
-		o += "Reps: " + monthData.rep + "<br>";
+		o += "Reps: " + monthData.rep + "<br><br>";
+		o += "Conservative: " + monthData.cnv + "<br>";
+		o += "U.S. Constitution Party: " + monthData.con + "<br>";
+		o += "Green: " + monthData.gre + "<br>";
+		o += "Libertarian: " + monthData.lib + "<br>";
+		o += "Natural Law Party: " + monthData.nat + "<br>";
+		o += "Reform Party: " + monthData.rfp + "<br>";
+		o += "Socialist Party of New Jersey: " + monthData.ssp + "<br><br>";
+		o += "Unaffliated: " + monthData.una + "<br>";
 	}
 	$("#caption").html(o);
 	if (e) zoomToFeature(e);
