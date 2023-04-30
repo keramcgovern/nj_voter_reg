@@ -12,6 +12,8 @@ var L = require('leaflet');
 
 const districtsData = require('./districts114.json');
 
+var district = "1";
+
 // Initialize the map
 var map = L.map('map', {
 	scrollWheelZoom: true
@@ -205,6 +207,7 @@ function getColor(district){
 }
 
 function style(feature) {
+	//console.log(getColor(feature.properties.DISTRICT));
 	return {
 		weight: 2,
 		opacity: 1,
@@ -217,6 +220,7 @@ function style(feature) {
 function findMonthData(district){
 	var month = $("#filter_single_month").val();
 	var year = $("#filter_single_year").val();
+
 	var temp = myData.data;
 	for (i in temp){
 		//console.log(`TMonth = ${temp[i].month}, month = ${month}, TDist = ${temp[i].congressional_voting_district}, dist = ${district}`);
@@ -228,14 +232,22 @@ function findMonthData(district){
 }
 
 function displayInfo(e){
-	var district = e.target.feature.properties.DISTRICT
+	if (e){
+		district = e.target.feature.properties.DISTRICT
+	}	
 	let monthData = findMonthData(district);
 	var o = "";
-	o += "<b>District " + district + "</b><br>";
-	o += "Dems: " + monthData.dem + "<br>";
-	o += "Reps: " + monthData.rep + "<br>";
+	if (monthData.dem < 0 || monthData.rep < 0){
+		o += "No Data Found.";
+		
+	}
+	else {
+		o += "<b>District " + district + "</b><br>";
+		o += "Dems: " + monthData.dem + "<br>";
+		o += "Reps: " + monthData.rep + "<br>";
+	}
 	$("#caption").html(o);
-	zoomToFeature(e);
+	if (e) zoomToFeature(e);
 }
 
 
@@ -327,7 +339,12 @@ function update(hard_update = false) {
 			$('#one_month').show();
 			$('#compare_months').hide();
 		}
-		
+		geojson.remove();
+		displayInfo();
+		geojson = L.geoJson(districtsData, {
+			style: style,
+			onEachFeature: onEachFeature
+		}).addTo(map)
 	} else {
 		show_data();
 	}
@@ -354,10 +371,10 @@ update_status(); //update the status bar
 $("#filter_selection").on("change", function () {
 	update();
 })
-$("#filter_violations").on("change", function () {
+$("#filter_single_month").on("change", function () {
 	update();
 })
-$("#filter_bo").on("change", function () {
+$("#filter_single_year").on("change", function () {
 	update();
 })
 
@@ -413,6 +430,7 @@ $.get(myData.csv, function (csvString) {
 				style: style,
 				onEachFeature: onEachFeature
 			}).addTo(map);
+			displayInfo();
 		}
 	})
 })
