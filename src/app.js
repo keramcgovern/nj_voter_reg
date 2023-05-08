@@ -32,6 +32,27 @@ map.on("drag", function () {
 	update_status();
 })
 
+var valMap = [];
+var months = {
+	1: "January",
+	2: "February",
+	3: "March",
+	4: "April",
+	5: "May",
+	6: "June",
+	7: "July",
+	8: "August",
+	9: "September",
+	10: "October",
+	11: "November",
+	12: "December"
+}
+for (let j = 2018; j < 2022; j++) {
+	for (let i = 1; i < 13; i++) {
+		valMap.push(`${months[i]} ${j}`)
+	}
+}
+
 //updates a little status line at the bottom
 function update_status() {
 	var center = map.getCenter();
@@ -197,13 +218,13 @@ var myData = {
 	},
 
 }
-function getColor(district){
+function getColor(district) {
 	let MData = findMonthData(district);
-	myRainbow.setSpectrum('blue','purple','red');
-	let numRep = MData.rep.replace(',','');
-	let numDem = MData.dem.replace(',','');
-	myRainbow.setNumberRange(0,parseInt(numDem)+parseInt(numRep));
-	return '#'+myRainbow.colorAt(parseInt(numRep));
+	myRainbow.setSpectrum('blue', 'purple', 'red');
+	let numRep = MData.rep.replace(',', '');
+	let numDem = MData.dem.replace(',', '');
+	myRainbow.setNumberRange(0, parseInt(numDem) + parseInt(numRep));
+	return '#' + myRainbow.colorAt(parseInt(numRep));
 }
 
 function style(feature) {
@@ -217,29 +238,31 @@ function style(feature) {
 	};
 }
 
-function findMonthData(district){
-	var month = $("#filter_single_month").val();
-	var year = $("#filter_single_year").val();
+function findMonthData(district) {
+	var full_date = $("#radiusAmount").val();
+	var [month, year] = full_date.split(" ");
+	month = month.toLowerCase();
+
 
 	var temp = myData.data;
-	for (i in temp){
+	for (i in temp) {
 		//console.log(`TMonth = ${temp[i].month}, month = ${month}, TDist = ${temp[i].congressional_voting_district}, dist = ${district}`);
-		if (temp[i].month == month && temp[i].year == year && temp[i].congressional_voting_district == district){
+		if (temp[i].month == month && temp[i].year == year && temp[i].congressional_voting_district == district) {
 			return temp[i];
 		}
 	}
 	return null;
 }
 
-function displayInfo(e){
-	if (e){
+function displayInfo(e) {
+	if (e) {
 		district = e.target.feature.properties.DISTRICT
-	}	
+	}
 	let monthData = findMonthData(district);
 	var o = "";
-	if (monthData.dem < 0 || monthData.rep < 0){
+	if (monthData.dem < 0 || monthData.rep < 0) {
 		o += "No Data Found.";
-		
+
 	}
 	else {
 		o += "<b>District " + district + "</b><br><br>";
@@ -260,32 +283,32 @@ function displayInfo(e){
 
 
 function highlightFeature(e) {
-    var layer = e.target;
+	var layer = e.target;
 
-    layer.setStyle({
-        weight: 5,
-        color: '#666',
-        dashArray: '',
-        fillOpacity: 0.7
-    });
+	layer.setStyle({
+		weight: 5,
+		color: '#666',
+		dashArray: '',
+		fillOpacity: 0.7
+	});
 
-    layer.bringToFront();
+	layer.bringToFront();
 }
 
 function resetHighlight(e) {
-    geojson.resetStyle(e.target);
+	geojson.resetStyle(e.target);
 }
 
 function zoomToFeature(e) {
-    map.fitBounds(e.target.getBounds());
+	map.fitBounds(e.target.getBounds());
 }
 
 function onEachFeature(feature, layer) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: displayInfo
-    });
+	layer.on({
+		mouseover: highlightFeature,
+		mouseout: resetHighlight,
+		click: displayInfo
+	});
 }
 
 
@@ -322,23 +345,6 @@ function show_data() {
 //otherwise will try to modify the circles that exist
 function update(hard_update = false) {
 	if (!hard_update) {
-		for (var i in circles) {
-			var d = circles[i].options.d;
-			circles[i].setStyle({
-				radius: v("radius", d),
-				weight: v("strokeWeight", d),
-				color: v("strokeColor", d),
-				fillColor: v("fillColor", d),
-				opacity: v("strokeOpacity", d),
-				fillOpacity: v("fillOpacity", d),
-			})
-			if (v("show", d, true) == true) {
-				circles[i]._path.classList.remove("hidden");
-			} else {
-				circles[i]._path.classList.add("hidden");
-			}
-		}
-		myData.locator();
 		if ($('#compare').prop('checked')) {
 			$('#one_month').hide();
 			$('#compare_months').show();
@@ -347,6 +353,7 @@ function update(hard_update = false) {
 			$('#one_month').show();
 			$('#compare_months').hide();
 		}
+		$('#radiusAmount').val(valMap[$('#myRange').val()]);
 		geojson.remove();
 		displayInfo();
 		geojson = L.geoJson(districtsData, {
@@ -385,6 +392,10 @@ $("#filter_single_month").on("change", function () {
 $("#filter_single_year").on("change", function () {
 	update();
 })
+$("#myRange").on("change", function () {
+	update();
+})
+
 
 //start downloading the data
 $.get(myData.csv, function (csvString) {
@@ -433,11 +444,12 @@ $.get(myData.csv, function (csvString) {
 				maxZoom: 19,
 				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 			}).addTo(map);
-			
+
 			geojson = L.geoJson(districtsData, {
 				style: style,
 				onEachFeature: onEachFeature
 			}).addTo(map);
+
 			displayInfo();
 		}
 	})

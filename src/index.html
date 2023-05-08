@@ -25,7 +25,10 @@
 					</fieldset>
 				</div>
 				<div id="one_month">
-					<table>
+					<input type="text" id="radiusAmount" value="January 2018" readonly>
+					<br>
+					<input type="range" min="0" max="47" value="0" class="slider" id="myRange">
+					<table hidden>
 						<tr>
 							<td>
 								<select id="filter_single_month">
@@ -106,7 +109,7 @@
 						</tr>
 					</table>
 				</div>
-				<div>
+				<div hidden>
 					Party:
 					<select id="party">
 						<option value="" selected>All</option>
