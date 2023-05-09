@@ -1,27 +1,16 @@
 var Rainbow = require('rainbowvis.js');
 var myRainbow = new Rainbow();
-
-// Initialize Jquery on our window
 var $ = jQuery = require('jquery');
-
-// CSV parser
 const parse = require('csv-parse');
-
-// Initialize leaflet.js
 var L = require('leaflet');
-
 const districtsData = require('./districts114.json');
 
 var district = "1";
-
-// Initialize the map
 var map = L.map('map', {
 	scrollWheelZoom: true
 });
-
-// Initialize globals
-var circles = []; //an array for our circles
 var geojson;
+var mode = 0;
 
 // Set the starting position and zoom level of the map
 // 40.7,-73.9 = NYC (lat, lon), 11 = a zoom level to see Manhattan
@@ -63,172 +52,34 @@ function update_status() {
 
 //an object that contains info about the specific data I am displaying
 var myData = {
-	//the CSV file with the data 
 	csv: "VoterRegistration.csv",
-
-	//function that returns the latitude and longtiude of the data as an array
-	latLng: function (d) { return [+d.lat, +d.long] },
-
-	//function that produces an array that tells it how to display in the locator control
-	locator: function () {
-
-		var data = [...myData.data]; //copy the data
-		data.sort(function (a, b) { //sort by name
-			if (a.name > b.name) return 1;
-			if (a.name < b.name) return -1;
-			return 0;
-		})
-		//create new array of just the index and the name
-		var locator = [];
-		var bo_option = $("#filter_bo").val();
-		var pool_type = $("#filter_pool_type").val();
-		for (var i in data) {
-			if (!bo_option && !pool_type) locator.push([data[i].i, data[i].name, data[i].inspection_date]);
-			if (!pool_type && bo_option && data[i].bo.toLowerCase() == bo_option) locator.push([data[i].i, data[i].name, data[i].inspection_date]);
-			if (pool_type && data[i].permit_type.toLowerCase() == pool_type && !bo_option) locator.push([data[i].i, data[i].name, data[i].inspection_date]);
-			if (pool_type && data[i].permit_type.toLowerCase() == pool_type && bo_option && data[i].bo.toLowerCase() == bo_option) locator.push([data[i].i, data[i].name, data[i].inspection_date]);
-		}
-
-		var opts = '<option value=""/>';
-		for (var i in locator) {
-			opts += '<option value="' + locator[i][0] + '">' + locator[i][2] + ' - ' + locator[i][1] + '</option>';
-		}
-		$("#locator").html(opts);
-
-		return locator;
-	},
-
-	//function called when something is selected on the locator
-	//gets the index of the data object, or blank if none selected 
-	locate: function (data_index) {
-		if (data_index == "") {
-			$("#caption").html("");
-			for (var i in circles) {
-				var d = circles[i].options.d;
-				circles[i]._path.classList.remove("selected");
-			}
-		} else {
-			myData.caption(myData.data[data_index]);
-			for (var i in circles) {
-				if (circles[i].options.d.i == data_index) {
-					circles[i]._path.classList.add("selected");
-				} else {
-					circles[i]._path.classList.remove("selected");
-				}
-			}
-		}
-	},
-
-	//radius of the circle (in pixels)
-	radius: function (d) {
-		return d.all_violations * 5;
-	},
-
-	//changes the fill color 
-	fillColor: function (d) {
-		if (+d.phh_violations > 0) return 'rgb(175, 0, 0)';
-		if (+d.critical_violations > 0) return 'rgb(255, 143, 0)';
-		if (+d.general_violations > 0) return 'rgb(255, 236, 0)';
-	},
-
-	//could set the stroke color separately,
-	//but here I'm just making it copy the fillColor
-	strokeColor: function (d) {
-		return v("fillColor", d)
-	},
-
-	//some other basic properties
-	fillOpacity: 0.2,
-	strokeOpacity: 0.7,
-	strokeWeight: 0.9,
-
-	//what happens when the mouse pointer goes over a circle
-	mouseover: function (d, svg) {
-		svg.classList.add("hover");
-	},
-
-	//what happens when the mouse pointer leaves a circle
-	mouseout: function (d, svg) {
-		svg.classList.remove("hover");
-	},
-
-	//class assigned to all circles
-	class: "circle",
-
-	//what happens when a circle is clicked
-	caption: function (d) {
-		var o = "";
-		o += "<b>" + d.name + "</b><br>";
-		o += d.address_no + " " + d.address_st + "<br>"; //,address_no,address_st,bo,zip,
-		o += "Inspection Date: " + d.inspection_date + "<br>";
-		o += "Inspection Type: " + d.inspection_type + "<br>";
-		o += "<br> All Violations: " + d.all_violations + "<br>";
-		o += "Public Health Hazards: " + d.phh_violations + "<br>";
-		o += "Critical: " + d.critical_violations + "<br>";
-		o += "General: " + d.general_violations + "<br>";
-		$("#caption").html(o);
-	},
-
-
-	show: function (d) {
-
-		let pool_type = true;
-		let bo = true;
-		let phh = false;
-		let gen = false;
-		let crit = false;
-		let y19 = false;
-		let y20 = false;
-		let y21 = false;
-
-		let map_options = {
-			"ma": [[40.744, -73.985], 13],
-			"bk": [[40.65, -73.936], 12],
-			"qu": [[40.741, -73.845], 12],
-			"bx": [[40.854, -73.887], 13],
-			"si": [[40.581, -74.167], 12],
-		}
-
-		var type_option = $("#filter_pool_type").val();
-		if (!type_option) pool_type = true;
-		else if (type_option == d.permit_type.toLowerCase()) {
-			pool_type = true;
-		} else {
-			pool_type = false;
-		}
-
-		var bo_option = $("#filter_bo").val();
-		if (!bo_option) bo = true;
-		else if (bo_option == d.bo.toLowerCase()) {
-			bo = true;
-			map.setView(map_options[bo_option][0], map_options[bo_option][1]);
-		} else {
-			bo = false;
-		}
-
-		if ($("#phh").prop('checked') && +d.phh_violations > 0) phh = true;
-		if ($("#general").prop('checked') && +d.general_violations > 0) gen = true;
-		if ($("#critical").prop('checked') && +d.critical_violations > 0) crit = true;
-
-		if ($("#2019").prop('checked') && +d.inspection_year == 2019) y19 = true;
-		if ($("#2020").prop('checked') && +d.inspection_year == 2020) y20 = true;
-		if ($("#2021").prop('checked') && +d.inspection_year == 2021) y21 = true;
-
-		return pool_type && bo && (phh || gen || crit) && (y19 || y20 || y21);
-	},
-
 }
+
+function strToInt(val) {
+	var s = val.replace(",", '');
+	return parseInt(s);
+}
+
 function getColor(district) {
-	let MData = findMonthData(district);
-	myRainbow.setSpectrum('blue', 'purple', 'red');
-	let numRep = MData.rep.replace(',', '');
-	let numDem = MData.dem.replace(',', '');
-	myRainbow.setNumberRange(0, parseInt(numDem) + parseInt(numRep));
-	return '#' + myRainbow.colorAt(parseInt(numRep));
+	if (mode == 0) {
+		let MData = findMonthData(district);
+		myRainbow.setSpectrum('blue', 'purple', 'red');
+		myRainbow.setNumberRange(0, strToInt(MData.dem) + strToInt(MData.rep));
+		return '#' + myRainbow.colorAt(strToInt(MData.rep));
+	}
+	else if (mode == 1) {
+		let res = findCompareMonthData(district);
+		if (res == null) {
+			return "#808080"
+		}
+		let [m2, m1] = res;
+		myRainbow.setSpectrum('red', 'green');
+		myRainbow.setNumberRange(0, 10000); //TODO idk what this number should be
+		return '#' + myRainbow.colorAt(strToInt(m1.total) - strToInt(m2.total));
+	}
 }
 
 function style(feature) {
-	//console.log(getColor(feature.properties.DISTRICT));
 	return {
 		weight: 2,
 		opacity: 1,
@@ -243,7 +94,6 @@ function findMonthData(district) {
 	var [month, year] = full_date.split(" ");
 	month = month.toLowerCase();
 
-
 	var temp = myData.data;
 	for (i in temp) {
 		//console.log(`TMonth = ${temp[i].month}, month = ${month}, TDist = ${temp[i].congressional_voting_district}, dist = ${district}`);
@@ -254,28 +104,73 @@ function findMonthData(district) {
 	return null;
 }
 
+function findCompareMonthData(district) {
+	var m1 = $("#filter_compare_month_one").val();
+	var y1 = $("#filter_compare_year_one").val();
+	var m2 = $("#filter_compare_month_two").val();
+	var y2 = $("#filter_compare_year_two").val();
+
+	if (m1 == m2 && y1 == y2) return null
+
+	var res = [];
+
+	var temp = myData.data;
+	for (i in temp) {
+		if ((temp[i].month == m1 && temp[i].year == y1 && temp[i].congressional_voting_district == district) || (temp[i].month == m2 && temp[i].year == y2 && temp[i].congressional_voting_district == district)) {
+			res.push(temp[i]);
+		}
+	}
+	return res;
+}
+
 function displayInfo(e) {
 	if (e) {
 		district = e.target.feature.properties.DISTRICT
 	}
-	let monthData = findMonthData(district);
 	var o = "";
-	if (monthData.dem < 0 || monthData.rep < 0) {
-		o += "No Data Found.";
-
+	if (mode == 0) {
+		let monthData = findMonthData(district);
+		if (monthData.dem < 0 || monthData.rep < 0) {
+			o += "No Data Found.";
+		}
+		else {
+			o += "<b>District " + district + "</b><br><br>";
+			o += "Dems: " + monthData.dem + "<br>";
+			o += "Reps: " + monthData.rep + "<br><br>";
+			o += "Conservative: " + monthData.cnv + "<br>";
+			o += "U.S. Constitution Party: " + monthData.con + "<br>";
+			o += "Green: " + monthData.gre + "<br>";
+			o += "Libertarian: " + monthData.lib + "<br>";
+			o += "Natural Law Party: " + monthData.nat + "<br>";
+			o += "Reform Party: " + monthData.rfp + "<br>";
+			o += "Socialist Party of New Jersey: " + monthData.ssp + "<br><br>";
+			o += "Unaffliated: " + monthData.una + "<br>";
+		}
 	}
-	else {
-		o += "<b>District " + district + "</b><br><br>";
-		o += "Dems: " + monthData.dem + "<br>";
-		o += "Reps: " + monthData.rep + "<br><br>";
-		o += "Conservative: " + monthData.cnv + "<br>";
-		o += "U.S. Constitution Party: " + monthData.con + "<br>";
-		o += "Green: " + monthData.gre + "<br>";
-		o += "Libertarian: " + monthData.lib + "<br>";
-		o += "Natural Law Party: " + monthData.nat + "<br>";
-		o += "Reform Party: " + monthData.rfp + "<br>";
-		o += "Socialist Party of New Jersey: " + monthData.ssp + "<br><br>";
-		o += "Unaffliated: " + monthData.una + "<br>";
+	else if (mode == 1) {
+		let res = findCompareMonthData(district);
+		if (res == null) {
+			o += "Two different months must be provided.";
+		}
+		else {
+			let [m2, m1] = res;
+			if (m1.dem < 0 || m1.rep < 0 || m2.dem < 0 || m2.rep < 0) {
+				o += "No data found at least one of the provided months.";
+			}
+			else {
+				o += "<b>District " + district + `<br> (Change from ${m2.month.toUpperCase()} ${m2.year} to ${m1.month.toUpperCase()} ${m1.year})` + "</b><br><br>";
+				o += "Dems: " + (strToInt(m1.dem) - strToInt(m2.dem)).toString() + "<br>";
+				o += "Reps: " + (strToInt(m1.rep) - strToInt(m2.rep)).toString() + "<br><br>";
+				o += "Conservative: " + (strToInt(m1.cnv) - strToInt(m2.cnv)).toString() + "<br>";
+				o += "U.S. Constitution Party: " + (strToInt(m1.con) - strToInt(m2.con)).toString() + "<br>";
+				o += "Green: " + (strToInt(m1.gre) - strToInt(m2.gre)).toString() + "<br>";
+				o += "Libertarian: " + (strToInt(m1.lib) - strToInt(m2.lib)).toString() + "<br>";
+				o += "Natural Law Party: " + (strToInt(m1.nat) - strToInt(m2.nat)).toString() + "<br>";
+				o += "Reform Party: " + (strToInt(m1.rfp) - strToInt(m2.rfp)).toString() + "<br>";
+				o += "Socialist Party of New Jersey: " + (strToInt(m1.ssp) - strToInt(m2.ssp)).toString() + "<br><br>";
+				o += "Unaffliated: " + (strToInt(m1.una) - strToInt(m2.una)).toString() + "<br>";
+			}
+		}
 	}
 	$("#caption").html(o);
 	if (e) zoomToFeature(e);
@@ -311,58 +206,29 @@ function onEachFeature(feature, layer) {
 	});
 }
 
-
-
-//function that displays the data
-function show_data() {
-	if (circles.length) {
-		for (var i in circles) {
-			circles[i].remove();
-		}
-	}
-
-	//sort it so that smaller circles end up on top
-	//uses the radius provided by myData
-
-	//make a copy of the data so we can sort it
-	myData.displayData = [...myData.data];
-	var data = myData.displayData;
-
-	data.sort(function (a, b) {
-		if (v("radius", a) > v("radius", b)) return -1;
-		if (v("radius", a) < v("radius", b)) return 1;
-		return 0;
-	})
-
-}
-
-
-
 //function that updates the data
 //if hard_update is false, will totally re-do the circles. use this for
 //anything that might change which circles are displayed in the first place, 
 //or might change their ordering.
 //otherwise will try to modify the circles that exist
-function update(hard_update = false) {
-	if (!hard_update) {
-		if ($('#compare').prop('checked')) {
-			$('#one_month').hide();
-			$('#compare_months').show();
-		}
-		else if ($('#single_month').prop('checked')) {
-			$('#one_month').show();
-			$('#compare_months').hide();
-		}
-		$('#radiusAmount').val(valMap[$('#myRange').val()]);
-		geojson.remove();
-		displayInfo();
-		geojson = L.geoJson(districtsData, {
-			style: style,
-			onEachFeature: onEachFeature
-		}).addTo(map)
-	} else {
-		show_data();
+function update() {
+	if ($('#compare').prop('checked')) {
+		$('#one_month').hide();
+		$('#compare_months').show();
+		mode = 1;
 	}
+	else if ($('#single_month').prop('checked')) {
+		$('#one_month').show();
+		$('#compare_months').hide();
+		mode = 0;
+	}
+	$('#radiusAmount').val(valMap[$('#myRange').val()]);
+	geojson.remove();
+	displayInfo();
+	geojson = L.geoJson(districtsData, {
+		style: style,
+		onEachFeature: onEachFeature
+	}).addTo(map)
 }
 
 //shorthand way to avoid testing each property to see if it is a 
@@ -390,6 +256,18 @@ $("#filter_single_month").on("change", function () {
 	update();
 })
 $("#filter_single_year").on("change", function () {
+	update();
+})
+$("#filter_compare_month_one").on("change", function () {
+	update();
+})
+$("#filter_compare_year_one").on("change", function () {
+	update();
+})
+$("#filter_compare_month_two").on("change", function () {
+	update();
+})
+$("#filter_compare_year_two").on("change", function () {
 	update();
 })
 $("#myRange").on("change", function () {
@@ -429,16 +307,6 @@ $.get(myData.csv, function (csvString) {
 			}
 			myData.max = max;
 			myData.min = min;
-
-			//make the locator
-			if ((typeof myData.locator == "function") && ($("#locator"))) {
-				var l = myData.locator();
-				$("#locator").on("change", function () {
-					myData.locate($("#locator").val());
-				})
-
-			}
-			show_data();
 
 			var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 				maxZoom: 19,
