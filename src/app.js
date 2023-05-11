@@ -11,6 +11,7 @@ var map = L.map('map', {
 });
 var geojson;
 var mode = 0;
+var partisan = false;
 
 // Set the starting position and zoom level of the map
 // 40.7,-73.9 = NYC (lat, lon), 11 = a zoom level to see Manhattan
@@ -61,10 +62,11 @@ function strToInt(val) {
 }
 
 function getColor(district) {
+	myRainbow.setSpectrum('blue', 'purple', 'red');
 	if (mode == 0) {
 		let MData = findMonthData(district);
-		myRainbow.setSpectrum('blue', 'purple', 'red');
-		myRainbow.setNumberRange(0, strToInt(MData.dem) + strToInt(MData.rep));
+		if (!partisan) myRainbow.setNumberRange(0, strToInt(MData.total));
+		if (partisan) myRainbow.setNumberRange(0, strToInt(MData.dem) + strToInt(MData.rep));
 		return '#' + myRainbow.colorAt(strToInt(MData.rep));
 	}
 	else if (mode == 1) {
@@ -73,9 +75,9 @@ function getColor(district) {
 			return "#808080"
 		}
 		let [m2, m1] = res;
-		myRainbow.setSpectrum('red', 'green');
-		myRainbow.setNumberRange(0, 10000); //TODO idk what this number should be
-		return '#' + myRainbow.colorAt(strToInt(m1.total) - strToInt(m2.total));
+		if (!partisan) myRainbow.setNumberRange(0, strToInt(m1.total) - strToInt(m2.total));
+		if (partisan) myRainbow.setNumberRange(0, (strToInt(m1.dem) + strToInt(m1.rep)) - (strToInt(m2.dem) + strToInt(m2.rep)));
+		return '#' + myRainbow.colorAt(strToInt(m1.rep) - strToInt(m2.rep));
 	}
 }
 
@@ -96,7 +98,6 @@ function findMonthData(district) {
 
 	var temp = myData.data;
 	for (i in temp) {
-		//console.log(`TMonth = ${temp[i].month}, month = ${month}, TDist = ${temp[i].congressional_voting_district}, dist = ${district}`);
 		if (temp[i].month == month && temp[i].year == year && temp[i].congressional_voting_district == district) {
 			return temp[i];
 		}
@@ -137,14 +138,20 @@ function displayInfo(e) {
 			o += "<b>District " + district + "</b><br><br>";
 			o += "Dems: " + monthData.dem + "<br>";
 			o += "Reps: " + monthData.rep + "<br><br>";
-			o += "Conservative: " + monthData.cnv + "<br>";
-			o += "U.S. Constitution Party: " + monthData.con + "<br>";
-			o += "Green: " + monthData.gre + "<br>";
-			o += "Libertarian: " + monthData.lib + "<br>";
-			o += "Natural Law Party: " + monthData.nat + "<br>";
-			o += "Reform Party: " + monthData.rfp + "<br>";
-			o += "Socialist Party of New Jersey: " + monthData.ssp + "<br><br>";
-			o += "Unaffliated: " + monthData.una + "<br>";
+			if (!partisan) {
+				o += "Conservative: " + monthData.cnv + "<br>";
+				o += "U.S. Constitution Party: " + monthData.con + "<br>";
+				o += "Green: " + monthData.gre + "<br>";
+				o += "Libertarian: " + monthData.lib + "<br>";
+				o += "Natural Law Party: " + monthData.nat + "<br>";
+				o += "Reform Party: " + monthData.rfp + "<br>";
+				o += "Socialist Party of New Jersey: " + monthData.ssp + "<br><br>";
+				o += "Unaffliated: " + monthData.una + "<br><br>";
+				o += `Total Registered Voters: ${monthData.total} <br><br>`;
+			}
+			else {
+				o += "Total: " + (strToInt(monthData.dem) + strToInt(monthData.rep)).toLocaleString() + "<br><br>";
+			}
 		}
 	}
 	else if (mode == 1) {
@@ -161,14 +168,20 @@ function displayInfo(e) {
 				o += "<b>District " + district + `<br> (Change from ${m2.month.toUpperCase()} ${m2.year} to ${m1.month.toUpperCase()} ${m1.year})` + "</b><br><br>";
 				o += "Dems: " + (strToInt(m1.dem) - strToInt(m2.dem)).toString() + "<br>";
 				o += "Reps: " + (strToInt(m1.rep) - strToInt(m2.rep)).toString() + "<br><br>";
-				o += "Conservative: " + (strToInt(m1.cnv) - strToInt(m2.cnv)).toString() + "<br>";
-				o += "U.S. Constitution Party: " + (strToInt(m1.con) - strToInt(m2.con)).toString() + "<br>";
-				o += "Green: " + (strToInt(m1.gre) - strToInt(m2.gre)).toString() + "<br>";
-				o += "Libertarian: " + (strToInt(m1.lib) - strToInt(m2.lib)).toString() + "<br>";
-				o += "Natural Law Party: " + (strToInt(m1.nat) - strToInt(m2.nat)).toString() + "<br>";
-				o += "Reform Party: " + (strToInt(m1.rfp) - strToInt(m2.rfp)).toString() + "<br>";
-				o += "Socialist Party of New Jersey: " + (strToInt(m1.ssp) - strToInt(m2.ssp)).toString() + "<br><br>";
-				o += "Unaffliated: " + (strToInt(m1.una) - strToInt(m2.una)).toString() + "<br>";
+				if (!partisan) {
+					o += "Conservative: " + (strToInt(m1.cnv) - strToInt(m2.cnv)).toString() + "<br>";
+					o += "U.S. Constitution Party: " + (strToInt(m1.con) - strToInt(m2.con)).toString() + "<br>";
+					o += "Green: " + (strToInt(m1.gre) - strToInt(m2.gre)).toString() + "<br>";
+					o += "Libertarian: " + (strToInt(m1.lib) - strToInt(m2.lib)).toString() + "<br>";
+					o += "Natural Law Party: " + (strToInt(m1.nat) - strToInt(m2.nat)).toString() + "<br>";
+					o += "Reform Party: " + (strToInt(m1.rfp) - strToInt(m2.rfp)).toString() + "<br>";
+					o += "Socialist Party of New Jersey: " + (strToInt(m1.ssp) - strToInt(m2.ssp)).toString() + "<br><br>";
+					o += "Unaffliated: " + (strToInt(m1.una) - strToInt(m2.una)).toString() + "<br><br>";
+					o += `Total Registration Change: ${(strToInt(m1.total) - strToInt(m2.total)).toLocaleString()}`
+				}
+				else {
+					o += `Total Registration Change: ${(strToInt(m1.rep) + strToInt(m1.dem) - (strToInt(m2.rep) + strToInt(m2.dem))).toLocaleString()}`
+				}
 			}
 		}
 	}
@@ -222,6 +235,7 @@ function update() {
 		$('#compare_months').hide();
 		mode = 0;
 	}
+	partisan = $('#partisan').prop('checked');
 	$('#radiusAmount').val(valMap[$('#myRange').val()]);
 	geojson.remove();
 	displayInfo();
@@ -273,6 +287,9 @@ $("#filter_compare_year_two").on("change", function () {
 $("#myRange").on("change", function () {
 	update();
 })
+$("#partisan").on("change"), function () {
+	updated();
+}
 
 
 //start downloading the data
