@@ -75,8 +75,16 @@ function getColor(district) {
 			return "#808080"
 		}
 		let [m2, m1] = res;
-		if (!partisan) myRainbow.setNumberRange(0, strToInt(m1.total) - strToInt(m2.total));
-		if (partisan) myRainbow.setNumberRange(0, (strToInt(m1.dem) + strToInt(m1.rep)) - (strToInt(m2.dem) + strToInt(m2.rep)));
+		if (!partisan) {
+			myRainbow.setSpectrum('green', "#FFBF00", 'red');
+			myRainbow.setNumberRange(-10000, 10000);
+			return '#' + myRainbow.colorAt(strToInt(m1.una) - strToInt(m2.una));
+		}
+		if (partisan) {
+			var t = (strToInt(m1.dem) + strToInt(m1.rep)) - (strToInt(m2.dem) + strToInt(m2.rep));
+			if (t < 0) myRainbow.setNumberRange(t, 0);
+			if (t >= 0) myRainbow.setNumberRange(0, t);
+		}
 		return '#' + myRainbow.colorAt(strToInt(m1.rep) - strToInt(m2.rep));
 	}
 }
@@ -180,7 +188,7 @@ function displayInfo(e) {
 					o += `Total Registration Change: ${(strToInt(m1.total) - strToInt(m2.total)).toLocaleString()}`
 				}
 				else {
-					o += `Total Registration Change: ${(strToInt(m1.rep) + strToInt(m1.dem) - (strToInt(m2.rep) + strToInt(m2.dem))).toLocaleString()}`
+					o += `Registration Change: ${(strToInt(m1.rep) + strToInt(m1.dem) - (strToInt(m2.rep) + strToInt(m2.dem))).toLocaleString()}`
 				}
 			}
 		}
